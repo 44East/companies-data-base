@@ -26,7 +26,7 @@ namespace CompaniesDataBase.Models.Entities
         public string State { get; set; }
 
         [Required]
-        [MaxLength(14)]
+        [MaxLength(16)]
         [DataType(DataType.PhoneNumber)]
         public string Phone { get; set; }
 

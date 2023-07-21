@@ -32,7 +32,17 @@ namespace CompaniesDataBase.Services.Data
             modelBuilder.Entity<Employee>()
                 .HasMany(e => e.Notes)
                 .WithOne(n => n.Employee)
-                .HasForeignKey(n=> n.EmployeeId);
+                .HasForeignKey(n => n.EmployeeId);
+
+            modelBuilder.Entity<Company>()
+                .HasMany(c => c.Orders)
+                .WithOne(o => o.Company)
+                .HasForeignKey(o => o.CompanyId);
+            modelBuilder.Entity<Company>()
+                .HasMany(c => c.Notes)
+                .WithOne(n => n.Company)
+                .HasForeignKey(n => n.CompanyId);
+            
         }
     }
 }
