@@ -1,0 +1,35 @@
+﻿@using CompaniesDataBase.Models.Entities
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IList<Note>
+
+<form asp-action="DeleteNote" method="post">
+    <div>
+        <h2>Notes</h2>
+        <button type="submit" class="btn btn-danger">Delete Selected</button>
+    </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Invoice Number</th>
+                <th>Employee</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var note in Model)
+            {
+                <tr>
+                    <td>@note.InvoiceNumber</td>
+                    <td>@note.Employee.FirstName @note.Employee.LastName</td>
+                    <td>
+                        <input type="checkbox" name="selectedItems" value="@note.Id" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
