@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CompaniesDataBase.Models.Entities;
 using CompaniesDataBase.Services.Data;
 using CompaniesDataBase.Models.DTO;
+using System.ComponentModel.Design;
 
 namespace CompaniesDB.Controllers
 {
@@ -19,7 +15,7 @@ namespace CompaniesDB.Controllers
         {
             _context = context;
         }
-
+        #region Company
         // GET: Companies
         public async Task<IActionResult> Index()
         {
@@ -72,11 +68,12 @@ namespace CompaniesDB.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Address,City,State,Phone")] Company company)
+        public async Task<IActionResult> Create([Bind("Name,Address,City,State,Phone")] CompanyDTO company)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(company);
+                var entry = _context.Add(new Company());
+                entry.CurrentValues.SetValues(company);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -177,6 +174,9 @@ namespace CompaniesDB.Controllers
         {
           return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        #endregion
+
+        #region Employee
         [HttpGet]
         public async Task<IActionResult> GetEmployeeDetails(int? id)
         {
@@ -192,6 +192,26 @@ namespace CompaniesDB.Controllers
             }
 
             return PartialView("Employees/_EmployeeDetailsPartial", employee);
+        }
+        [HttpPost, ActionName("CreateEmployee")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateEmployee(int? companyId, [Bind("FirstName, LastName, Title, Position, BirthDate")] EmployeeDTO employee)
+        {
+            if (companyId == null || employee == null || !ModelState.IsValid) 
+            {
+                return Problem("company id is not available or an employee data is not correct.");
+            }
+            var entry = _context.Add(new Employee() { CompanyId = companyId.Value });
+            entry.CurrentValues.SetValues(employee);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+            return RedirectToAction(nameof(Details), new { Id = companyId });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -245,6 +265,30 @@ namespace CompaniesDB.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { Id = companyId});
         }
+        #endregion
+        #region Notes
+        [HttpPost, ActionName("CreateNote")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateNote([Bind("InvoiceNumber, CompanyId, EmployeeId")] NoteDTO note)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Problem(ModelState.ToString());
+            }
+            var entry = _context.Add(new Note());
+            entry.CurrentValues.SetValues(note);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+            return RedirectToAction(nameof(Details), new { Id = note.CompanyId });
+
+
+        }
         [HttpPost, ActionName("DeleteNote")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteNote(int[]? selectedItems)
@@ -269,5 +313,6 @@ namespace CompaniesDB.Controllers
                        
             return RedirectToAction(nameof(Details), new { Id = companyId });
         }
+        #endregion
     }
 }

@@ -11,7 +11,7 @@ namespace CompaniesDataBase.Models.Entities
 
         [Required]
         [MaxLength(10)]
-        public int InvoiceNumber { get; set; }
+        public string InvoiceNumber { get; set; }
 
         [Required]
         public int CompanyId { get; set; }
@@ -24,5 +24,10 @@ namespace CompaniesDataBase.Models.Entities
 
         [ForeignKey(nameof(EmployeeId))]
         public Employee Employee { get; set; }
+
+        /*---------------------------------------*/
+
+        [NotMapped]
+        public IList<Employee> EmpoyeesInCompany { get; set; }
     }
 }

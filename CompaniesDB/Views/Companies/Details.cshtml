@@ -7,8 +7,17 @@
 <html>
 <head>
     <style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header-container h2 {
+                margin: 0;
+            }
         .block {
-            border: 3px solid black;
+            border: 1px solid black;
             padding: 10px;
             margin-bottom: 20px;
         }
@@ -51,7 +60,7 @@
     <script src="~/js/site.js"></script>
 </head>
 <body>
-    <div id="companyDetailsContainer">
+    <div id="companyDetailsContainer" class="pb-5" >
         <div class="block company-info">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Company info</h2>
@@ -65,25 +74,37 @@
         <div class="block orders scrollable-table">
             @await Html.PartialAsync("/Views/Companies/Orders/_OrdersListPartial.cshtml", Model.Orders)
         </div>
-
-        <div class="block notes scrollable-table">
-            
+        <div>
+            <div id="createNoteModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    @await Html.PartialAsync("/Views/Companies/Notes/_CreateNoteModalPartial.cshtml", new CompaniesDataBase.Models.Entities.Note(){CompanyId = Model.Id, EmpoyeesInCompany = Model.Employees})
+                </div>
+            </div>
+            <div class="block notes scrollable-table">
                 @await Html.PartialAsync("/Views/Companies/Notes/_NotesListPartial.cshtml", Model.Notes)
+            </div>
         </div>
         <div class="block employees">
             <div class="row">
                 <div class="col-md-6">
-                    <h2>Employees</h2>
-                    <a href="#" id="createEmployeeLink">Add new Employee</a>
+                    <div class="header-container">
+                        <h2>Employees</h2>
+                        <a href="#" id="createEmployeeLink">Add new Employee</a>
+                    </div>
                     <table class="table table-striped">
                         @await Html.PartialAsync("/Views/Companies/Employees/_EmployeeListPartial.cshtml", Model.Employees)
                     </table>
                 </div>
                 <div class="col-md-6">
                     <div id="employeeDetailsContainer">
-
                         @await Html.PartialAsync("/Views/Companies/Employees/_EmployeeDetailsPartial.cshtml", Model.CurrentEmployee)
-
+                    </div>
+                </div>
+                <div id="employeeModal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        @await Html.PartialAsync("/Views/Companies/Employees/_CreateEmployeeModalPartial.cshtml", new CompaniesDataBase.Models.Entities.Employee(){CompanyId = Model.Id})
                     </div>
                 </div>
             </div>
