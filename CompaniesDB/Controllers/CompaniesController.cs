@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using CompaniesDataBase.Models.Entities;
 using CompaniesDataBase.Services.Data;
 using CompaniesDataBase.Models.DTO;
-using System.ComponentModel.Design;
 
 namespace CompaniesDB.Controllers
 {
@@ -19,9 +18,9 @@ namespace CompaniesDB.Controllers
         // GET: Companies
         public async Task<IActionResult> Index()
         {
-              return _context.Companies != null ? 
-                          View(await _context.Companies.ToListAsync()) :
-                          Problem("Entity set 'CompaniesContext.Companies'  is null.");
+            return _context.Companies != null ?
+                        View(await _context.Companies.ToListAsync()) :
+                        Problem("Entity set 'CompaniesContext.Companies'  is null.");
         }
 
         // GET: Companies/Details/5
@@ -31,7 +30,7 @@ namespace CompaniesDB.Controllers
             {
                 return NotFound();
             }
-
+            //Get all entities for each company
             var company = await _context.Companies
                 .Include(c => c.Employees)
                 .Include(c => c.Orders)
@@ -45,6 +44,7 @@ namespace CompaniesDB.Controllers
             {
                 if (company.Employees.Count() > 0)
                 {
+                    //For an edit employee form select a current employee or first in colection
                     company.CurrentEmployee = employeeId.HasValue ? company.Employees.FirstOrDefault(e => e.Id == employeeId.Value) : company.Employees.First();
                 }
                 else
@@ -52,12 +52,11 @@ namespace CompaniesDB.Controllers
                     company.CurrentEmployee = new Employee();
                 }
             }
-            
+
 
             return View(company);
         }
 
-        // GET: Companies/Create
         public IActionResult Create()
         {
             return View();
@@ -65,7 +64,6 @@ namespace CompaniesDB.Controllers
 
         // POST: Companies/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Address,City,State,Phone")] CompanyDTO company)
@@ -80,7 +78,6 @@ namespace CompaniesDB.Controllers
             return View(company);
         }
 
-        // GET: Companies/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Companies == null)
@@ -98,42 +95,37 @@ namespace CompaniesDB.Controllers
 
 
 
-        // POST: Companies/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address,City,State,Phone")] Company company)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address,City,State,Phone")] CompanyDTO company)
         {
-            if (id != company.Id)
+            if (!await _context.Companies.AnyAsync(c => c.Id == id))
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var currentCopany = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id);
+                if (currentCopany == null)
+                {
+                    return NotFound(company);
+                }
+                var entry = _context.Update(currentCopany);
+                entry.CurrentValues.SetValues(company);
                 try
                 {
-                    _context.Update(company);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CompanyExists(company.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
                 return RedirectToAction(nameof(Details), new { Id = id });
             }
-            return View(company);
+            return Problem(ModelState.ToString());
         }
 
-        // GET: Companies/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Companies == null)
@@ -151,7 +143,6 @@ namespace CompaniesDB.Controllers
             return View(company);
         }
 
-        // POST: Companies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -165,14 +156,14 @@ namespace CompaniesDB.Controllers
             {
                 _context.Companies.Remove(company);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CompanyExists(int id)
         {
-          return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
         #endregion
 
@@ -197,7 +188,7 @@ namespace CompaniesDB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEmployee(int? companyId, [Bind("FirstName, LastName, Title, Position, BirthDate")] EmployeeDTO employee)
         {
-            if (companyId == null || employee == null || !ModelState.IsValid) 
+            if (companyId == null || employee == null || !ModelState.IsValid)
             {
                 return Problem("company id is not available or an employee data is not correct.");
             }
@@ -239,7 +230,7 @@ namespace CompaniesDB.Controllers
             {
                 throw;
             }
-            return RedirectToAction(nameof(Details), new {Id = currentEmployee.CompanyId, employeeId = currentEmployee.Id});
+            return RedirectToAction(nameof(Details), new { Id = currentEmployee.CompanyId, employeeId = currentEmployee.Id });
         }
         [HttpPost, ActionName("DeleteEpmloyee")]
         [ValidateAntiForgeryToken]
@@ -253,6 +244,7 @@ namespace CompaniesDB.Controllers
             int companyId = default;
             if (employee != null)
             {
+                //EF core doesn't [delete.cascade] entity with several foreighn keys. The class Note has two FK (Employee and Company), this code delete binding Notes in DB after delete binding employee.
                 companyId = employee.CompanyId;
                 _context.Notes.RemoveRange(await _context.Notes.Where(n => n.EmployeeId == employee.Id).ToArrayAsync());
                 _context.Employees.Remove(employee);
@@ -263,7 +255,7 @@ namespace CompaniesDB.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Details), new { Id = companyId});
+            return RedirectToAction(nameof(Details), new { Id = companyId });
         }
         #endregion
         #region Notes
@@ -293,7 +285,7 @@ namespace CompaniesDB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteNote(int[]? selectedItems)
         {
-            if(selectedItems == null || _context.Notes == null) 
+            if (selectedItems == null || _context.Notes == null)
             {
                 return Problem("Entity set 'CompaniesContext.Notes' or id's are null.");
             }
@@ -301,7 +293,7 @@ namespace CompaniesDB.Controllers
             foreach (var id in selectedItems)
             {
                 var note = await _context.Notes.FindAsync(id);
-                
+
                 if (note != null)
                 {
                     companyId = note.CompanyId;
@@ -310,7 +302,7 @@ namespace CompaniesDB.Controllers
             }
 
             await _context.SaveChangesAsync();
-                       
+
             return RedirectToAction(nameof(Details), new { Id = companyId });
         }
         #endregion

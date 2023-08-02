@@ -32,6 +32,7 @@ namespace CompaniesDataBase.Models.Entities
 
         /*------------------------------------*/
 
+        //This property uses in a details view, for selected employee for editing
         [NotMapped]
         public Employee CurrentEmployee { get; set; }
 

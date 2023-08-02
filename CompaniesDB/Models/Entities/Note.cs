@@ -26,7 +26,7 @@ namespace CompaniesDataBase.Models.Entities
         public Employee Employee { get; set; }
 
         /*---------------------------------------*/
-
+        //This collection uses in selected list in creation view
         [NotMapped]
         public IList<Employee> EmpoyeesInCompany { get; set; }
     }

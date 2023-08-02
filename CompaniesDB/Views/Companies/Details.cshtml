@@ -53,6 +53,7 @@
             overflow-y: auto;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
@@ -90,7 +91,7 @@
                 <div class="col-md-6">
                     <div class="header-container">
                         <h2>Employees</h2>
-                        <a href="#" id="createEmployeeLink">Add new Employee</a>
+                        <button id="createEmployeeLink" class="btn btn-success"><i class="fas fa-plus"></i> </button>
                     </div>
                     <table class="table table-striped">
                         @await Html.PartialAsync("/Views/Companies/Employees/_EmployeeListPartial.cshtml", Model.Employees)
@@ -101,7 +102,7 @@
                         @await Html.PartialAsync("/Views/Companies/Employees/_EmployeeDetailsPartial.cshtml", Model.CurrentEmployee)
                     </div>
                 </div>
-                <div id="employeeModal" style="display: none;">
+                <div id="employeeModal" class="modal">
                     <div class="modal-content">
                         <span class="close">&times;</span>
                         @await Html.PartialAsync("/Views/Companies/Employees/_CreateEmployeeModalPartial.cshtml", new CompaniesDataBase.Models.Entities.Employee(){CompanyId = Model.Id})
